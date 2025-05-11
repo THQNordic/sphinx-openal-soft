@@ -45,9 +45,15 @@ namespace al {
 
 al::optional<std::string> getenv(const char *envname)
 {
+#ifndef __ORBIS__
     const char *str{std::getenv(envname)};
     if(str && str[0] != '\0')
         return al::make_optional<std::string>(str);
+#else /* swy: FIXME: adapt as needed :) */
+    if(strcasecmp(envname, "ALSOFT_LOGLEVEL") == 0)
+        return al::make_optional<std::string>("3");
+#endif
+
     return al::nullopt;
 }
 

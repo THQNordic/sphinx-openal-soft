@@ -37,7 +37,9 @@
 #include <cinttypes>
 #include <climits>
 #include <cmath>
-#include <csignal>
+#ifndef __ORBIS__ /* swy: Orbis no likey :-) */
+  #include <csignal>
+#endif
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -1633,7 +1635,11 @@ static void alcSetError(ALCdevice *device, ALCenum errorCode)
         if(IsDebuggerPresent())
             DebugBreak();
 #elif defined(SIGTRAP)
+  #ifndef __ORBIS__ /* swy: Orbis no likey :-) */
         raise(SIGTRAP);
+  #else
+        __builtin_trap();
+  #endif
 #endif
     }
 

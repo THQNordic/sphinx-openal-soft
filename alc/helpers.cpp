@@ -189,10 +189,12 @@ void SetRTPriority(void)
 
 #include <sys/types.h>
 #include <unistd.h>
-#include <dirent.h>
-#ifdef __FreeBSD__
-#include <sys/sysctl.h>
-#endif
+#ifndef __ORBIS__
+  #include <dirent.h>
+  #if defined(__FreeBSD__)
+    #include <sys/sysctl.h>
+  #endif
+#endif /* __ORBIS__ */
 #ifdef __HAIKU__
 #include <FindDirectory.h>
 #endif
@@ -210,7 +212,7 @@ const PathNamePair &GetProcBinary()
     if(procbin) return *procbin;
 
     al::vector<char> pathname;
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) && !defined(__ORBIS__)
     size_t pathlen;
     int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1 };
     if(sysctl(mib, 4, nullptr, &pathlen, nullptr, 0) == -1)
@@ -241,7 +243,7 @@ const PathNamePair &GetProcBinary()
             pathname.insert(pathname.end(), procpath, procpath+strlen(procpath));
     }
 #endif
-#ifndef __SWITCH__
+#if !(defined(__SWITCH__) || defined(__ORBIS__))
     if(pathname.empty())
     {
         static const char SelfLinkNames[][32]{
@@ -296,6 +298,9 @@ namespace {
 void DirectorySearch(const char *path, const char *ext, al::vector<std::string> *const results)
 {
     TRACE("Searching %s for *%s\n", path, ext);
+#ifdef __ORBIS__ /* swy: nothing to do here */
+    return;
+#else
     DIR *dir{opendir(path)};
     if(!dir) return;
 
@@ -325,6 +330,7 @@ void DirectorySearch(const char *path, const char *ext, al::vector<std::string> 
     std::sort(newlist.begin(), newlist.end());
     for(const auto &name : newlist)
         TRACE(" got %s\n", name.c_str());
+#endif /* __ORBIS__ */
 }
 
 } // namespace
@@ -340,7 +346,7 @@ al::vector<std::string> SearchDataFiles(const char *ext, const char *subdir)
         DirectorySearch(subdir, ext, &results);
         return results;
     }
-
+#ifndef __ORBIS__
     /* Search the app-local directory. */
     if(auto localpath = al::getenv("ALSOFT_LOCAL_PATH"))
         DirectorySearch(localpath->c_str(), ext, &results);
@@ -403,7 +409,7 @@ al::vector<std::string> SearchDataFiles(const char *ext, const char *subdir)
 
         DirectorySearch(path.c_str(), ext, &results);
     }
-
+#endif /* __ORBIS__ */
     return results;
 }
 

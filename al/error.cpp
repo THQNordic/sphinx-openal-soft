@@ -26,7 +26,9 @@
 #endif
 
 #include <atomic>
-#include <csignal>
+#ifndef __ORBIS__ /* swy: Orbis no likey :-) */
+  #include <csignal>
+#endif
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
@@ -73,7 +75,11 @@ void ALCcontext::setError(ALenum errorCode, const char *msg, ...)
         if(IsDebuggerPresent())
             DebugBreak();
 #elif defined(SIGTRAP)
+  #ifndef __ORBIS__ /* swy: Orbis no likey :-) */
         raise(SIGTRAP);
+  #else
+        __builtin_trap();
+  #endif
 #endif
     }
 
@@ -95,7 +101,11 @@ START_API_FUNC
             if(IsDebuggerPresent())
                 DebugBreak();
 #elif defined(SIGTRAP)
+  #ifndef __ORBIS__ /* swy: Orbis no likey :-) */
             raise(SIGTRAP);
+  #else
+            __builtin_trap();
+  #endif
 #endif
         }
         return deferror;

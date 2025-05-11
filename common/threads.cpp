@@ -98,7 +98,9 @@ bool semaphore::try_wait() noexcept
 
 void althrd_setname(const char *name)
 {
-#if defined(HAVE_PTHREAD_SET_NAME_NP)
+#if defined(__ORBIS__)
+    pthread_rename_np(pthread_self(), name);
+#elif defined(HAVE_PTHREAD_SET_NAME_NP)
     pthread_set_name_np(pthread_self(), name);
 #elif defined(PTHREAD_SETNAME_NP_ONE_PARAM)
     pthread_setname_np(name);
